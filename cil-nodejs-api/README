@@ -1,2 +1,6 @@
 Created from the following tutorial:
 https://www.cocreate.id/articles/cara-membuat-rest-api-dengan-node-js-1/
+https://www.cocreate.id/articles/cara-membuat-rest-api-dengan-node-js-2/
+
+MongoDB executed on docker, run following command:
+docker run --name mongodb -d -p 27017:27017 -v ~/mongodb mongo
