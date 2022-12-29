@@ -1,0 +1,11 @@
+{
+  "name": "cil-nodejs-api",
+  "version": "1.0.0",
+  "description": "Simple REST API with NodeJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rama Rahardi",
+  "license": "ISC"
+}
