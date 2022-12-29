@@ -11,7 +11,11 @@ const mongoDBConnector = new MongoDBConnector({
 	name: 'cil-rest-api',
 	host: 'mongodb://localhost:27017'
 });
-mongoDBConnector.connect();
+try {
+	mongoDBConnector.connect();
+} catch (err) {
+	console.error("Failed connecting to database: " + err);
+}
 
 app.use(bodyParser.json());
 
@@ -79,7 +83,11 @@ app.post('/logout', (req, res) => {
 ['SIGINT', 'SIGTERM'].forEach((signal) => {
 	process.on(signal, async() => {
 		console.log("Stop signal received");
-		mongoDBConnector.disconnect();
+		try {
+			mongoDBConnector.disconnect();
+		} catch (err) {
+			console.error("Failed disconnecting from DB: " + err);
+		}
 		console.log("Exiting...");
 		process.exit(0);
 	});
