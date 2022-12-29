@@ -3,7 +3,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const port = 3000;
+const port = 3000; // API port
+const MongoDBConnector = require('./mongoDBConnector'); // local library for MongoDB connector
+
+// Create new MongoDB Connector object
+const mongoDBConnector = new MongoDBConnector({
+	name: 'cil-rest-api',
+	host: 'mongodb://localhost:27017'
+});
+mongoDBConnector.connect();
 
 app.use(bodyParser.json());
 
@@ -65,4 +73,14 @@ app.post('/login', (req, res) => {
 // Logout from a user
 app.post('/logout', (req, res) => {
 	res.send("Logout: POST /logout");
+});
+
+// Disconnect from DB when user terminates the program
+['SIGINT', 'SIGTERM'].forEach((signal) => {
+	process.on(signal, async() => {
+		console.log("Stop signal received");
+		mongoDBConnector.disconnect();
+		console.log("Exiting...");
+		process.exit(0);
+	});
 });
