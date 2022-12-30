@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 3000; // API port
 const MongoDBConnector = require('./mongoDBConnector'); // local library for MongoDB connector
+const collection = 'cil-users';
 
 // Create new MongoDB Connector object
 const mongoDBConnector = new MongoDBConnector({
@@ -32,11 +33,18 @@ app.get('/helloworld', (req, res) => {
 
 // POST /user
 // Creates new user
-app.post('/user', (req, res) => {
-	res.send({
-		message: "Create new user: POST /user",
-		body: req.body
-	});
+app.post('/user', async (req, res) => {
+	const success = await mongoDBConnector.insertOne(collection, req.body);
+	if (success) {
+		res.status(201).send({
+			message: "Created new user",
+			body: req.body
+		});
+	} else {
+		res.status(404).send({
+			message: "Not found"
+		});
+	}
 });
 
 // GET /user
