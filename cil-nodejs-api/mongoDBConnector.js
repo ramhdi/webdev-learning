@@ -54,6 +54,27 @@ class MongoDBConnector {
 			return false;
 		}
 	}
+
+	// Find entry in database
+	async find(collection, filter) {
+		try {
+			const res = await this.db.collection(collection).find(filter);
+			return res.toArray();
+		} catch (err) {
+			console.error("Failed finding entry: " + err);
+			return -1;
+		}
+	}
+
+	async findOne(collection, filter) {
+		try {
+			const res = await this.db.collection(collection).findOne(filter);
+			return res;
+		} catch (err) {
+			console.error("Failed finding entry: " + err);
+			return -1;
+		}
+	}
 }
 
 module.exports = MongoDBConnector;

@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = 3000; // API port
+const {ObjectID} = require('mongodb');
 const MongoDBConnector = require('./mongoDBConnector'); // local library for MongoDB connector
 const collection = 'cil-users';
 
@@ -41,22 +42,38 @@ app.post('/user', async (req, res) => {
 			body: req.body
 		});
 	} else {
-		res.status(404).send({
-			message: "Not found"
+		res.status(500).send({
+			message: "Server error"
 		});
 	}
 });
 
 // GET /user
 // Returns list of users
-app.get('/user', (req, res) => {
-	res.send("Get user list: GET /user");
+app.get('/user', async (req, res) => {
+	const result = await mongoDBConnector.find(collection, {});
+	if (result == -1) {
+		res.status(500).send({
+			message: "Server error"
+		});
+	} else {
+		res.status(200).send(result);
+	}
 });
 
 // GET /user/:id
 // Returns specific username
-app.get('/user/:id', (req, res) => {
-	res.send(`Get user: GET /user/${req.params.id}`);
+app.get('/user/:id', async(req, res) => {
+	//res.send(`Get user: GET /user/${req.params.id}`);
+	const filter = {_id: ObjectID(req.params.id)};
+	const result = await mongoDBConnector.find(collection, filter);
+	if (result == -1) {
+		res.status(500).send({
+			message: "Server error"
+		});
+	} else {
+		res.status(200).send(result);
+	}
 });
 
 // PATCH /user/:id
