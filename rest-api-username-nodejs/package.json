@@ -1,5 +1,5 @@
 {
-  "name": "cil-nodejs-api",
+  "name": "rest-api-username-nodejs",
   "version": "1.0.0",
   "description": "Simple REST API with NodeJS",
   "main": "index.js",
