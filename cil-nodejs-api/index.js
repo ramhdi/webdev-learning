@@ -13,10 +13,10 @@ const mongoDBConnector = new MongoDBConnector({
 	name: 'cil-rest-api',
 	host: 'mongodb://localhost:27017'
 });
-try {
-	mongoDBConnector.connect();
-} catch (err) {
-	console.error("Failed connecting to database: " + err);
+
+if(!mongoDBConnector.connect()) {
+	console.error("Failed connecting to DB");
+	return 1;
 }
 
 app.use(bodyParser.json());
@@ -64,7 +64,6 @@ app.get('/user', async (req, res) => {
 // GET /user/:id
 // Returns specific username
 app.get('/user/:id', async(req, res) => {
-	//res.send(`Get user: GET /user/${req.params.id}`);
 	const filter = {_id: ObjectID(req.params.id)};
 	const result = await mongoDBConnector.find(collection, filter);
 	if (result == -1) {
@@ -78,18 +77,35 @@ app.get('/user/:id', async(req, res) => {
 
 // PATCH /user/:id
 // Updates existing user data
-app.patch('/user/:id', (req, res) => {
-	const msg = {
-		message: "Update user: PATCH /user/" + req.params.id,
-		body: req.body
-	};
-	res.send(msg);
+app.patch('/user/:id', async (req, res) => {
+	const filter = {_id: ObjectID(req.params.id)};
+	const success = await mongoDBConnector.updateOne(collection, filter, req.body);
+	if (success) {
+		res.status(200).send({
+			message: "Updated user",
+			body: req.body
+		});
+	} else {
+		res.status(500).send({
+			message: "Server error"
+		});
+	}
 });
 
 // DELETE /user/:id
 // Deletes specified user
-app.delete('/user/:id', (req, res) => {
-	res.send("Delete user: DELETE /user/" + req.params.id);
+app.delete('/user/:id', async (req, res) => {
+	const filter = {_id: ObjectID(req.params.id)};
+	const success = await mongoDBConnector.deleteOne(collection, filter);
+	if (success) {
+		res.status(200).send({
+			message: "Deleted user",
+		});
+	} else {
+		res.status(500).send({
+			message: "Server error"
+		});
+	}
 });
 
 // POST /login

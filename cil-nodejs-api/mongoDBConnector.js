@@ -32,8 +32,10 @@ class MongoDBConnector {
 			Object.assign(this, {db, client});
 			await client.db("admin").command({ping:1});
 			console.log("Connected to DB successfully");
+			return true;
 		} catch (err) {
-			console.error(err);
+			console.error("Failed connecting to DB: " + err);
+			return false;
 		}
 	}
 
@@ -59,6 +61,7 @@ class MongoDBConnector {
 	async find(collection, filter) {
 		try {
 			const res = await this.db.collection(collection).find(filter);
+			console.log("Success finding entry");
 			return res.toArray();
 		} catch (err) {
 			console.error("Failed finding entry: " + err);
@@ -66,13 +69,39 @@ class MongoDBConnector {
 		}
 	}
 
+	// Find single entry in database
 	async findOne(collection, filter) {
 		try {
 			const res = await this.db.collection(collection).findOne(filter);
+			console.log("Success finding entry");
 			return res;
 		} catch (err) {
 			console.error("Failed finding entry: " + err);
 			return -1;
+		}
+	}
+
+	// Update single entry in database
+	async updateOne(collection, filter, data) {
+		try {
+			await this.db.collection(collection).updateOne(filter, {$set:data});
+			console.log("Success updating entry " + filter._id);
+			return true;
+		} catch (err) {
+			console.error("Failed updating entry " + filter._id + ": " + err);
+			return false;
+		}
+	}
+
+	// Delete single entry in database
+	async deleteOne(collection, filter) {
+		try {
+			await this.db.collection(collection).deleteOne(filter);
+			console.log("Success deleting entry " + filter._id);
+			return true;
+		} catch (err) {
+			console.error("Failed deleting entry " + filter._id + ": " + err);
+			return false;
 		}
 	}
 }
