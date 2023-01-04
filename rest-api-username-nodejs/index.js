@@ -1,5 +1,7 @@
 // Simple REST API doing CRUD activities
 
+'use strict';
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
