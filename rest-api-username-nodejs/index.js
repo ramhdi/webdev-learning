@@ -13,7 +13,7 @@ const collection = 'cil-users';
 // Create new MongoDB Connector object
 const mongoDBConnector = new MongoDBConnector({
 	name: 'cil-rest-api',
-	host: 'mongodb://localhost:27017'
+	host: 'mongodb://10.0.26.21:27017'
 });
 
 if(!mongoDBConnector.connect()) {
