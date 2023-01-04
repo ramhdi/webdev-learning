@@ -1,0 +1,25 @@
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+	worker_connections 768;
+}
+
+http {
+	include mime.types;
+	limit_req_zone $request_uri zone=test_zone:10m rate=1r/s;
+
+	server {
+		listen 443 ssl;
+		server_name localhost;
+		ssl_certificate /etc/nginx/ssl/self.cert;
+		ssl_certificate_key /etc/nginx/ssl/self.key;
+		root /bloggingtemplate/;
+		
+		location / {
+			limit_req zone=test_zone burst=2 nodelay;
+		}
+	}
+}
