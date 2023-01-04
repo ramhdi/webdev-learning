@@ -2,5 +2,14 @@ Created from the following tutorial:
 https://www.cocreate.id/articles/cara-membuat-rest-api-dengan-node-js-1/
 https://www.cocreate.id/articles/cara-membuat-rest-api-dengan-node-js-2/
 
-MongoDB executed on docker, run following command:
-docker run --name mongodb -d -p 27017:27017 -v ~/mongodb mongo
+Build docker image:
+docker build . -t rest-api-username-nodejs
+
+Create network on docker:
+docker network create --subnet=10.0.26.0/24 mynet
+
+Run MongoDB on docker:
+docker run --name mongodb -d --net mynet --ip 10.0.26.21 -p 27017:27017 -v ~/mongodb mongo
+
+Run app on docker:
+docker run --name rest-api-username-nodejs -d --net mynet --ip 10.0.26.11 -p 3000:3000 rest-api-username-nodejs
