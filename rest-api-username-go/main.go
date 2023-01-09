@@ -22,18 +22,19 @@ const db_name = "cil-rest-api"
 const collection_name = "cil-users"
 
 type User struct {
-	id			string	`json:"_id" bson:"_id"`
-	username	string	`json:"username" bson:"username"`
-	password	string	`json:"password" bson:"password"`
+	Username string `json:"username" bson:"username"`
+	Password string `json:"password" bson:"password"`
 }
 
+// Connect to database
 func GetMongoDBConnection() (*mongo.Client, error) {
-	//fmt.Println("GetMongoDBConnection")
+	// Connect to database URI
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(host))
 	if err != nil {
 		return nil, err
 	}
 
+	// Ping database to check connectivity
 	err = client.Ping(context.TODO(), readpref.Primary())
 	if err != nil {
 		return nil, err
@@ -42,18 +43,22 @@ func GetMongoDBConnection() (*mongo.Client, error) {
 	return client, nil
 }
 
+// Open collection
 func GetMongoDBCollection (dbName string, collectionName string) (*mongo.Collection, error) {
-	//fmt.Println("GetMongoDBCollection")
+	// Connect to DB
 	client, err := GetMongoDBConnection()
 	if err != nil {
 		return nil, err
 	}
 
+	// Return collection
 	collection := client.Database(dbName).Collection(collectionName)
 	return collection, nil
 }
 
+// Return list of all users
 func GetAllUsers(c *gin.Context) {
+	// Connect to DB
     collection, err := GetMongoDBCollection(db_name, collection_name)
     if err != nil {
         log.Fatal(err)
@@ -61,8 +66,8 @@ func GetAllUsers(c *gin.Context) {
         return
     }
 
+	// Find all database entries
     var filter bson.M = bson.M{}
-
     var results []bson.M
     cur, err := collection.Find(context.TODO(), filter)
     defer cur.Close(context.TODO())
@@ -73,12 +78,12 @@ func GetAllUsers(c *gin.Context) {
     }
 
     cur.All(context.TODO(), &results)
-    //json, _ := json.Marshal(results)
     c.JSON(200, results)
 }
 
+// Return user of specified ID
 func GetUser(c *gin.Context) {
-	//fmt.Println("GetUser")
+	// Connect to DB
 	collection, err := GetMongoDBCollection(db_name, collection_name)
 	if err != nil {
 		log.Fatal(err)
@@ -86,6 +91,7 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
+	// Use ID as filter
 	var filter bson.M = bson.M{}
 	if c.Param("id") != "" {
 		id := c.Param("id")
@@ -93,6 +99,7 @@ func GetUser(c *gin.Context) {
 		filter = bson.M{"_id": objID}
 	}
 
+	// Find matching database entries
 	var results []bson.M
 	cur, err := collection.Find(context.TODO(), filter)
 	defer cur.Close(context.TODO())
@@ -103,14 +110,48 @@ func GetUser(c *gin.Context) {
 	}
 
 	cur.All(context.TODO(), &results)
-	//json, _ := json.Marshal(results)
 	c.JSON(200, results)
+}
+
+// Create new user
+func PostUser(c *gin.Context) {
+	// Connect to DB
+	collection, err := GetMongoDBCollection(db_name, collection_name)
+	//_, err := GetMongoDBCollection(db_name, collection_name)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+
+	// Parse request body (JSON) to User struct
+	var newUser User
+	err = c.BindJSON(&newUser)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+
+	// Insert new user to DB
+	_, err = collection.InsertOne(context.TODO(), newUser)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+	c.JSON(201, gin.H{"message": "Created new user", "body": newUser});
+	//c.JSON(201, newUser);
+	//c.JSON(201, newUser)
 }
 
 func main() {
 	router := gin.Default()
 	router.GET("/user/", GetAllUsers)
 	router.GET("/user/:id", GetUser)
-	
+	router.POST("/user/", PostUser)
+	//router.PATCH("/user/:id", PatchUser)
+	//router.DELETE("/user/:id", DeleteUser)
+
 	router.Run("localhost:3001")
 }
