@@ -117,7 +117,6 @@ func GetUser(c *gin.Context) {
 func PostUser(c *gin.Context) {
 	// Connect to DB
 	collection, err := GetMongoDBCollection(db_name, collection_name)
-	//_, err := GetMongoDBCollection(db_name, collection_name)
 	if err != nil {
 		log.Fatal(err)
 		c.String(500, err.Error())
@@ -140,9 +139,68 @@ func PostUser(c *gin.Context) {
 		c.String(500, err.Error())
 		return
 	}
+
 	c.JSON(201, gin.H{"message": "Created new user", "body": newUser});
-	//c.JSON(201, newUser);
-	//c.JSON(201, newUser)
+}
+
+// Update user data
+func PatchUser(c *gin.Context) {
+	// Connect to DB
+	collection, err := GetMongoDBCollection(db_name, collection_name)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+
+	// Parse request body (JSON) to User struct
+	var updateUser User
+	err = c.BindJSON(&updateUser)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+	update := bson.M{"$set": updateUser}
+
+	// Use ID as filter
+	objID, _ := primitive.ObjectIDFromHex(c.Param("id"))
+	filter := bson.M{"_id": objID}
+
+	// Update matching database entry
+	_, err = collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Updated user", "body": updateUser})
+}
+
+// Delete user
+func DeleteUser(c *gin.Context) {
+	// Connect to DB
+	collection, err := GetMongoDBCollection(db_name, collection_name)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+
+	// Use ID as filter
+	objID, _ := primitive.ObjectIDFromHex(c.Param("id"))
+	filter := bson.M{"_id": objID}
+
+	// Find matching database entries
+	_, err = collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
+		c.String(500, err.Error())
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Deleted user"})
 }
 
 func main() {
@@ -150,8 +208,8 @@ func main() {
 	router.GET("/user/", GetAllUsers)
 	router.GET("/user/:id", GetUser)
 	router.POST("/user/", PostUser)
-	//router.PATCH("/user/:id", PatchUser)
-	//router.DELETE("/user/:id", DeleteUser)
+	router.PATCH("/user/:id", PatchUser)
+	router.DELETE("/user/:id", DeleteUser)
 
 	router.Run("localhost:3001")
 }
