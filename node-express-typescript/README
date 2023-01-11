@@ -1,0 +1,7 @@
+https://blog.logrocket.com/how-to-set-up-node-typescript-express/
+
+The source code (index.ts) is first transpiled to JavaScript code (dist/index.js). Then run app on dist/index.js.
+
+Build + run process:
+npx tsc				( npm build )
+node dist/index.js	( npm start )
